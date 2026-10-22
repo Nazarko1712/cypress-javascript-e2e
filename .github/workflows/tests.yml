@@ -1,0 +1,76 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # The target is a public demo site. A nightly run surfaces its drift,
+    # including the day one of the deliberate defects gets fixed.
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+jobs:
+  # Lint is its OWN job, not a step inside the test job. It needs no browser
+  # and no network and finishes in seconds, so it runs concurrently with the
+  # suite: a formatting failure does not wait behind a browser run, and a test
+  # failure is not hidden behind a formatting failure.
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      # `--check`, never `--write`: CI reports on the branch it was asked to
+      # verify, it does not rewrite it.
+      - name: Prettier
+        run: npm run format:check
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      # The action handles the Cypress binary cache, which is the slow part of
+      # a cold run.
+      - name: Run suite
+        uses: cypress-io/github-action@v6
+        with:
+          install: false
+          command: npm test
+        env:
+          CI: true
+
+      # `!cancelled()` rather than `failure()`: the report of a green run is
+      # what you compare the next red one against.
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: junit-report
+          path: reports/
+          retention-days: 14
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots/
+          retention-days: 7
