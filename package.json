@@ -1,0 +1,39 @@
+{
+  "name": "cypress-javascript-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cypress end-to-end suite in plain JavaScript, organised with the Page Object Model",
+  "type": "commonjs",
+  "scripts": {
+    "test": "cypress run",
+    "test:headed": "cypress run --headed --no-exit",
+    "open": "cypress open",
+    "test:login": "cypress run --spec 'cypress/e2e/login.cy.js'",
+    "test:inventory": "cypress run --spec 'cypress/e2e/inventory.cy.js'",
+    "test:checkout": "cypress run --spec 'cypress/e2e/checkout.cy.js'",
+    "test:defects": "cypress run --spec 'cypress/e2e/known-defects.cy.js'",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "keywords": [
+    "cypress",
+    "javascript",
+    "e2e",
+    "page-object-model",
+    "qa-automation"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "cypress": "^16.2.0",
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-cypress": "^7.0.2",
+    "globals": "^17.13.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.9.10"
+  }
+}
